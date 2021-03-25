@@ -1,1 +1,67 @@
 
+---
+title: "Test"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Clean data
+1. Get evaluable data set
+2. Assess missingness
+3. Remove missing variables
+4. Transform likert scale variables
+```{r}
+library(lubridate)
+setwd("~/Google Drive/Agenda/Jobs/PCG")
+pcg_data = read.csv("Sample Service Data_March 2021.csv", header = TRUE, na.strings = c("", " "))
+### Remove ID, Date, Collector ID, 
+pcg_data_eval = pcg_data %>%
+  select(-c(ID, Collector.ID, start_date, end_date))
+### Evaluate missing data
+library(naniar)
+### Remove missing data
+pcg_data_eval_complete = na.omit(pcg_data_eval)
+n_total = dim(pcg_data_eval)[1]
+n_complete = dim(na.omit(pcg_data_eval))[1]
+percent_complete = round(n_complete / n_total,2)
+percent_complete
+missing_results = data.frame(n_total, n_complete, percent_complete)
+missing_results
+```
+Now transform the likert scale into numbers
+```{r}
+
+pcg_data_eval_complete = pcg_data_eval_complete %>%
+  mutate(satisfied_quality = case_when( satisfied_quality == "Strongly Agree" ~ "4",
+    satisfied_quality == "Agree" ~ "3",
+    satisfied_quality == "Disagree" ~ "2",
+    satisfied_quality == "Strongly Disagree" ~ "1")) %>%
+  mutate(satisfied_amount = case_when( satisfied_amount == "Strongly Agree" ~ "4",
+    satisfied_amount == "Agree" ~ "3",
+    satisfied_amount == "Disagree" ~ "2",
+    satisfied_amount == "Strongly Disagree" ~ "1")) %>%
+  mutate(services_received = case_when( services_received == "Strongly Agree" ~ "4",
+    services_received == "Agree" ~ "3",
+    services_received == "Disagree" ~ "2",
+    services_received == "Strongly Disagree" ~ "1"))  %>%
+  mutate(clinician_listened_respectful = case_when( clinician_listened_respectful == "Strongly Agree" ~ "4",
+    clinician_listened_respectful == "Agree" ~ "3",
+    clinician_listened_respectful == "Disagree" ~ "2",
+    clinician_listened_respectful == "Strongly Disagree" ~ "1")) %>%
+  mutate(depend_clinician = case_when( depend_clinician == "Strongly Agree" ~ "4",
+    depend_clinician == "Agree" ~ "3",
+    depend_clinician == "Disagree" ~ "2",
+    depend_clinician == "Strongly Disagree" ~ "1")) 
+pcg_data_eval_complete
+```
+Create table one
+```{r}
+library(tableone)
+tab_one = CreateTableOne(data = pcg_data_eval_complete[c(1:9)])
+print(tab_one, showAllLevels = TRUE)
+```
+
+
+
