@@ -75,20 +75,21 @@ mean_out = pcg_data_eval_complete %>%
 mean_out = t(mean_out)
 mean_out = data.frame(mean_out, vars = c("Satisfied with service quality", "Satisfied with amount of services", "Services improved my family problems", "The clinician respected my family", "The clinician was dependable"))
 mean_out$vars =  with(mean_out, reorder(vars, mean_out, mean))
-mean_out
+mean_out$greater_than_3_5 = ifelse(mean_out$mean_out >= 3.5, 1, 0)
 
-p <- ggplot(mean_out, aes(x = vars, y = mean_out))+
-  geom_col() +
+p <- ggplot(mean_out, aes(x = vars, y = mean_out, fill = as.character(greater_than_3_5)))+
+  geom_col()+
   coord_flip() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
   panel.background = element_blank(), plot.title = element_markdown()) +
+    geom_text(aes(label = mean_out), vjust = -0.1, hjust = -.3) +
   theme(text=element_text(size=11,  family="Verdana")) +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
         axis.ticks.y = element_blank(),
         axis.title.x = element_blank(),
-        axis.title.y = element_blank())+
-  geom_text(aes(label = mean_out), vjust = -0.1, hjust = -.3) 
+        axis.title.y = element_blank(), 
+        legend.position = "none")
 p
 ```
 
