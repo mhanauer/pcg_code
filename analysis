@@ -1,4 +1,3 @@
-
 ---
 title: "Test"
 output: html_document
@@ -54,13 +53,43 @@ pcg_data_eval_complete = pcg_data_eval_complete %>%
     depend_clinician == "Agree" ~ "3",
     depend_clinician == "Disagree" ~ "2",
     depend_clinician == "Strongly Disagree" ~ "1")) 
+write.csv(pcg_data_eval_complete, "pcg_data_eval_complete.csv", row.names = FALSE)
+pcg_data_eval_complete = read.csv("pcg_data_eval_complete.csv", header = TRUE)
 pcg_data_eval_complete
 ```
 Create table one
 ```{r}
 library(tableone)
 tab_one = CreateTableOne(data = pcg_data_eval_complete[c(1:9)])
-print(tab_one, showAllLevels = TRUE)
+tab_one = print(tab_one, showAllLevels = TRUE)
+```
+Create a horizontal plot 
+```{r}
+library(ggplot2)
+library(ggalt)
+library(ggtext) 
+library(forcats)
+mean_out = pcg_data_eval_complete %>%
+  summarise_at(c("satisfied_quality", "satisfied_amount", "services_received", "clinician_listened_respectful", "depend_clinician", "depend_clinician"), mean, na.rm = TRUE)%>%
+  mutate(across(1:5, round, 2))
+mean_out = t(mean_out)
+mean_out = data.frame(mean_out, vars = c("Satisfied with service quality", "Satisfied with amount of services", "Services improved my family problems", "The clinician respected my family", "The clinician was dependable"))
+mean_out$vars =  with(mean_out, reorder(vars, mean_out, mean))
+mean_out
+
+p <- ggplot(mean_out, aes(x = vars, y = mean_out))+
+  geom_col() +
+  coord_flip() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  panel.background = element_blank(), plot.title = element_markdown()) +
+  theme(text=element_text(size=11,  family="Verdana")) +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())+
+  geom_text(aes(label = mean_out), vjust = -0.1, hjust = -.3) 
+p
 ```
 
 
