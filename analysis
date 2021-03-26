@@ -52,16 +52,33 @@ pcg_data_eval_complete = pcg_data_eval_complete %>%
   mutate(depend_clinician = case_when( depend_clinician == "Strongly Agree" ~ "4",
     depend_clinician == "Agree" ~ "3",
     depend_clinician == "Disagree" ~ "2",
-    depend_clinician == "Strongly Disagree" ~ "1")) 
+    depend_clinician == "Strongly Disagree" ~ "1")) %>%
+  mutate(organization = case_when(
+    organization == "Independent Aid Society" ~ "Another Org",
+    organization == "IIHS" ~ "Another Org", 
+    TRUE ~ as.character(organization))) %>%
+  mutate(counselor = case_when(
+    counselor == "Counselor A" ~ "Another Counselor",
+    counselor == "Counselor B" ~ "Another Counselor",
+    counselor == "Counselor E" ~ "Another Counselor",
+    TRUE ~ as.character(counselor))) %>%
+  mutate(city = case_when(
+  city == "McGehee" ~ "McGehee", 
+  city == "Monticello" ~ "Monticello", 
+  TRUE ~ "Another City"))
+
+ 
 write.csv(pcg_data_eval_complete, "pcg_data_eval_complete.csv", row.names = FALSE)
 pcg_data_eval_complete = read.csv("pcg_data_eval_complete.csv", header = TRUE)
-pcg_data_eval_complete
+pcg_data_eval_complete$recommend
 ```
 Create table one
 ```{r}
 library(tableone)
 tab_one = CreateTableOne(data = pcg_data_eval_complete[c(1:9)])
 tab_one = print(tab_one, showAllLevels = TRUE)
+write.csv(tab_one, file = "tab1.csv")
+
 ```
 Create a horizontal plot 
 ```{r}
@@ -76,22 +93,25 @@ mean_out = t(mean_out)
 mean_out = data.frame(mean_out, vars = c("Satisfied with service quality", "Satisfied with amount of services", "Services improved my family problems", "The clinician respected my family", "The clinician was dependable"))
 mean_out$vars =  with(mean_out, reorder(vars, mean_out, mean))
 mean_out$greater_than_3_5 = ifelse(mean_out$mean_out >= 3.5, 1, 0)
+mean_out$label = mean_out$vars
 
 p <- ggplot(mean_out, aes(x = vars, y = mean_out, fill = as.character(greater_than_3_5)))+
   geom_col()+
   coord_flip() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
   panel.background = element_blank(), plot.title = element_markdown()) +
-    geom_text(aes(label = mean_out), vjust = -0.1, hjust = -.3) +
-  theme(text=element_text(size=11,  family="Verdana")) +
+  geom_text(aes(label = mean_out), vjust = -0.1, hjust = -.3, family = "Verdana") +
+  geom_text(aes(label = vars), vjust = 0, hjust = 1.1, family = "Verdana")+ 
+  labs(title = "Participants are satisfied across all areas, but most satisfied with their clinician's <span style = 'color: #00BFC4;'>dependability </span>and <span style = 'color: #00BFC4;'>respect </span>") +
+  theme(text=element_text(size=,  family="Verdana")) +
   theme(axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
         axis.ticks.x=element_blank(),
         axis.ticks.y = element_blank(),
         axis.title.x = element_blank(),
         axis.title.y = element_blank(), 
-        legend.position = "none")
+        legend.position = "none") 
 p
+ggsave("p.png", p, width = 10, height = 5)
 ```
-
-
 
