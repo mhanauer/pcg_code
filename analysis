@@ -70,7 +70,6 @@ pcg_data_eval_complete = pcg_data_eval_complete %>%
  
 write.csv(pcg_data_eval_complete, "pcg_data_eval_complete.csv", row.names = FALSE)
 pcg_data_eval_complete = read.csv("pcg_data_eval_complete.csv", header = TRUE)
-pcg_data_eval_complete$recommend
 ```
 Create table one
 ```{r}
@@ -114,4 +113,3 @@ p <- ggplot(mean_out, aes(x = vars, y = mean_out, fill = as.character(greater_th
 p
 ggsave("p.png", p, width = 10, height = 5)
 ```
-
